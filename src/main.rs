@@ -3,6 +3,7 @@
 
 use cortex_m_rt::entry;
 use embedded_graphics::{
+    image::{Image, ImageRawLE},
     mono_font::{ascii::FONT_6X10, MonoTextStyleBuilder},
     pixelcolor::BinaryColor,
     prelude::*,
@@ -19,6 +20,8 @@ use ssd1306::{prelude::*, I2CDisplayInterface, Ssd1306};
 #[no_mangle]
 #[used]
 pub static BOOT2_FIRMWARE: [u8; 256] = rp2040_boot2::BOOT_LOADER_W25Q080;
+
+static FERRIS: &[u8] = include_bytes!("../ferris.raw");
 
 #[entry]
 fn main() -> ! {
@@ -71,10 +74,10 @@ fn main() -> ! {
         .text_color(BinaryColor::On)
         .build();
 
-    Text::with_baseline("Hello Rust!", Point::zero(), text_style, Baseline::Top)
-        .draw(&mut display)
-        .unwrap();
-
+    // Draw ferris
+    let ferris: ImageRawLE<BinaryColor> = ImageRawLE::new(FERRIS, 128);
+    let ferris_img = Image::new(&ferris, Point::zero());
+    ferris_img.draw(&mut display).unwrap();
     display.flush().unwrap();
 
     let mut led = pins.led.into_push_pull_output();
